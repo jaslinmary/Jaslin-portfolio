@@ -1267,6 +1267,7 @@ body:not(.dark) .technology-list span {
 
     gap: 16px;
     margin-bottom: 28px;
+    margin-left: 10px;
 }
 
 .experience-item:last-child {
@@ -2925,3 +2926,4 @@ body.dark .tech-tags span {
         max-width: 220px;
     }
 }
+
