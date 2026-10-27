@@ -111,45 +111,153 @@ document.addEventListener("keydown", function (event) {
 
 
 
+
 /* =========================
-   CONTACT FORM
+   CONTACT FORM - FASTAPI
 ========================= */
 
 const contactForm = document.getElementById("contact-form");
+const formStatus = document.getElementById("form-status");
 
-
-contactForm.addEventListener("submit", function (event) {
-
+contactForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const name = document.getElementById("name").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const message = document.getElementById("message").value.trim();
+    const submitButton = contactForm.querySelector(
+        'button[type="submit"]'
+    );
 
+    const originalText = submitButton.innerHTML;
 
-    if (!name || !email || !message) {
+    const formData = {
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        message: document.getElementById("message").value.trim()
+    };
 
-        alert("Please fill in all the fields.");
-
+    if (!formData.name || !formData.email || !formData.message) {
+        formStatus.textContent = "Please fill in all the fields.";
+        formStatus.style.color = "red";
         return;
     }
 
+    submitButton.disabled = true;
+    submitButton.innerHTML = "Sending...";
+    formStatus.textContent = "";
 
-    /*
-       This currently opens the user's email application.
-       Replace the email address below if needed.
-    */
+    try {
+        const response = await fetch(
+            "http://127.0.0.1:8000/contact",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            }
+        );
 
-    const subject = encodeURIComponent(
-        `Portfolio Contact from ${name}`
-    );
+        const result = await response.json();
 
-    const body = encodeURIComponent(
-        `Name: ${name}\n\nEmail: ${email}\n\nMessage:\n${message}`
-    );
+        if (!response.ok) {
+            throw new Error(
+                result.detail || "Unable to send your message."
+            );
+        }
 
+        formStatus.textContent =
+            "Message sent successfully! Thank you for contacting me.";
+        formStatus.style.color = "green";
 
-    window.location.href =
-        `mailto:jaslinmary005@gmail.com?subject=${subject}&body=${body}`;
+        contactForm.reset();
 
+    } catch (error) {
+        console.error("Contact form error:", error);
+
+        formStatus.textContent =
+            "Unable to send your message. Please try again later.";
+        formStatus.style.color = "red";
+
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    }
 });
+
+
+/* =========================
+   SWEETHAVEN PROJECT MODAL
+========================= */
+
+const sweetHavenModal =
+    document.getElementById("sweethaven-modal");
+
+const sweetHavenDetailsButton =
+    document.getElementById("sweethaven-details-btn");
+
+const sweetHavenModalClose =
+    document.getElementById("sweethaven-modal-close");
+
+const sweetHavenModalCloseButton =
+    document.getElementById("sweethaven-modal-close-btn");
+
+
+// Open SweetHaven modal
+function openSweetHavenModal() {
+    sweetHavenModal.classList.add("show");
+    sweetHavenModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+}
+
+
+// Close SweetHaven modal
+function closeSweetHavenModal() {
+    sweetHavenModal.classList.remove("show");
+    sweetHavenModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+}
+
+
+// Check that the required elements exist
+if (sweetHavenModal && sweetHavenDetailsButton) {
+
+    sweetHavenDetailsButton.addEventListener(
+        "click",
+        openSweetHavenModal
+    );
+
+    if (sweetHavenModalClose) {
+        sweetHavenModalClose.addEventListener(
+            "click",
+            closeSweetHavenModal
+        );
+    }
+
+    if (sweetHavenModalCloseButton) {
+        sweetHavenModalCloseButton.addEventListener(
+            "click",
+            closeSweetHavenModal
+        );
+    }
+
+    // Close when clicking outside the modal content
+    sweetHavenModal.addEventListener("click", function (event) {
+        if (event.target === sweetHavenModal) {
+            closeSweetHavenModal();
+        }
+    });
+
+    // Close using Escape
+    document.addEventListener("keydown", function (event) {
+        if (
+            event.key === "Escape" &&
+            sweetHavenModal.classList.contains("show")
+        ) {
+            closeSweetHavenModal();
+        }
+    });
+
+} else {
+    console.error(
+        "SweetHaven modal or Details button is missing from HTML."
+    );
+}
